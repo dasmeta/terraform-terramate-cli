@@ -1,5 +1,6 @@
 module "terraform_setups" {
-  source = "../terraform-renderer-generic"
+  source  = "dasmeta/generic/renderer"
+  version = "1.0.0"
 
   for_each = local.stacks
 
@@ -27,7 +28,7 @@ module "terraform_setups" {
     backend = each.value.terraform_backend
   }
   provider_default_tags = var.provider_default_tags
-  generated_by_module   = "dasmeta/terraform-terramate-cli"
+  generated_by_module   = "dasmeta/terramate/cli"
 }
 
 module "stack_generators" {
@@ -40,5 +41,5 @@ module "stack_generators" {
   stack_name          = each.value.name
   stack_description   = each.value.description
   stack_after         = each.value.linked_workspaces
-  generated_by_module = "dasmeta/terraform-terramate-cli"
+  generated_by_module = "dasmeta/terramate/cli"
 }
