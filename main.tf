@@ -1,6 +1,6 @@
 module "terraform_setups" {
   source  = "dasmeta/generic/renderer"
-  version = "1.0.0"
+  version = "1.0.3"
 
   for_each = local.stacks
 
