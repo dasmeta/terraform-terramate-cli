@@ -4,9 +4,10 @@ This example is also the basic executable validation case for the repository.
 
 It verifies that the root driver module:
 
-- reads multiple YAML files from a directory
+- reads YAML files directly from the example root
+- merges shared `_.yaml` content from the example root
 - generates one Terramate stack per YAML file
-- writes the expected Terraform and Terramate files to the target directory
+- writes the expected Terraform and Terramate files to the `_terraform/` target directory
 <!-- BEGINNING OF PRE-COMMIT-TERRAFORM DOCS HOOK -->
 ## Requirements
 

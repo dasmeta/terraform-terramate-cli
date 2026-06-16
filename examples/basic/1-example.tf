@@ -1,6 +1,7 @@
 module "this" {
   source = "../.."
 
-  yamldir   = "${path.module}/example-infra"
-  targetdir = "./output"
+  yamldir         = path.module
+  targetdir       = "./_terraform"
+  stack_id_prefix = "basic"
 }

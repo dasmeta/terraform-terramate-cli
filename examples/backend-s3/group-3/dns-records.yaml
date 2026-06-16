@@ -1,0 +1,32 @@
+source: *dns_module_source
+version: *dns_module_version
+linked_workspaces:
+  - group-2/dns-zone
+mock_inputs:
+  enabled: true
+  values:
+    group-0/module-a:
+      first-string-variable: "mock-module-a"
+    group-0/module-b:
+      example-static-value: "mock-module-b"
+    group-1/module-c:
+      example-static-value: "mock-module-c"
+variables:
+  zone: *dns_zone_name
+  create_zone: false
+  records:
+    - name: module-a.terramate-test.devops.dasmeta.com
+      type: TXT
+      value:
+        - ${group-0/module-a["first-string-variable"]}
+    - name: module-b.terramate-test.devops.dasmeta.com
+      type: TXT
+      value:
+        - ${group-0/module-b["example-static-value"]}
+    - name: module-c.terramate-test.devops.dasmeta.com
+      type: TXT
+      value:
+        - some-prefix-${group-1/module-c["example-static-value"]}-some-suffix
+variable_options:
+  records:
+    sensitive: true

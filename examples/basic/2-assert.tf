@@ -1,18 +1,19 @@
 locals {
   expected_stack_paths = tolist([
-    "module-a",
-    "module-b",
+    "group-0/module-a",
+    "group-0/module-b",
   ])
 
   expected_files = sort(flatten([
     for stack_path in local.expected_stack_paths : [
-      "./output/${stack_path}/README.md",
-      "./output/${stack_path}/main.tf",
-      "./output/${stack_path}/outputs.tf",
-      "./output/${stack_path}/stack.tm.hcl",
-      "./output/${stack_path}/versions.tf",
+      "./_terraform/${stack_path}/README.md",
+      "./_terraform/${stack_path}/main.tf",
+      "./_terraform/${stack_path}/sharing.tm.hcl",
+      "./_terraform/${stack_path}/stack.tm.hcl",
+      "./_terraform/${stack_path}/versions.tf",
     ]
   ]))
+  expected_generated_files = sort(concat(local.expected_files, ["./_terraform/terramate.tm.hcl"]))
 }
 
 check "stack_paths_match_basic_fixture" {
@@ -24,7 +25,7 @@ check "stack_paths_match_basic_fixture" {
 
 check "generated_files_match_basic_fixture" {
   assert {
-    condition     = sort(module.this.generated_files) == local.expected_files
+    condition     = sort(module.this.generated_files) == local.expected_generated_files
     error_message = "Generated file paths do not match the basic fixture."
   }
 }

@@ -14,6 +14,6 @@ output "stack_paths" {
 }
 
 output "generated_files" {
-  value       = sort(flatten(concat([for _, setup in module.terraform_setups : setup.generated_files], [for _, generator in module.stack_generators : generator.generated_files])))
-  description = "Generated file paths written by the stack generator submodule."
+  value       = sort(flatten(concat([for _, stack in module.terraform_setups : stack.generated_files], [for item in local_file.terramate_outputs_sharing_config : item.filename])))
+  description = "Generated file paths written by the stack submodule."
 }

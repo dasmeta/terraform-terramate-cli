@@ -1,0 +1,22 @@
+// ${note}
+output "shared_results" {
+  backend = "default"
+  value   = module.this
+%{ if output_sensitive != null ~}
+  sensitive = ${output_sensitive}
+%{ endif ~}
+}
+%{ for setup_name in linked_setups ~}
+
+input "${linked_input_names[setup_name]}" {
+  backend       = "default"
+  from_stack_id = "${linked_input_from_stack_ids[setup_name]}"
+  value         = outputs.shared_results.value
+%{ if linked_input_sensitive[setup_name] != null ~}
+  sensitive     = ${linked_input_sensitive[setup_name]}
+%{ endif ~}
+%{ if mock_inputs_enabled ~}
+  mock          = ${jsonencode(linked_input_mocks[setup_name])}
+%{ endif ~}
+}
+%{ endfor ~}

@@ -18,6 +18,11 @@ shared driver-agnostic mapping logic.
 - writes Terramate stack metadata into the target directory
 - supports explicit `linked_workspaces` and auto-detected `${stack.output}`
   interpolation references
+- defaults linked stack handling to Terramate experimental outputs-sharing
+- forces shared-renderer `outputs.tf` off in outputs-sharing mode and back on in
+  explicit `remote_state` mode
+- supports configurable Terramate mock inputs with a global default and per-stack
+  YAML override
 - renders backend-aware Terraform remote-state wiring for linked stacks
 - supports a root-level backend default with per-stack YAML override and isolated
   state identity per generated stack
@@ -26,11 +31,24 @@ shared driver-agnostic mapping logic.
 
 ```hcl
 module "this" {
-  source = "dasmeta/terramate/cli"
+  source = "dasmeta/cli/terramate"
 
   yamldir   = "${path.module}/infra"
   targetdir = "${path.module}/generated/stacks"
 }
+```
+
+For the stable Terraform-native linking path, set:
+
+```hcl
+linking_mode = "remote_state"
+```
+
+If multiple generated stack trees live in the same Terramate repository, you can
+optionally prefix stack IDs to keep them repo-wide unique:
+
+```hcl
+stack_id_prefix = "example-name"
 ```
 
 Example YAML:
@@ -48,6 +66,8 @@ version: 1.2.2
   `versions.tf`
 - `terraform_backend`: optional default backend configuration applied to
   generated stacks unless overridden in YAML
+- `mock_inputs_enabled`: optional default for Terramate outputs-sharing mocks;
+  stack YAML may override it with `mock_inputs.enabled`
 
 ## Outputs
 
@@ -59,7 +79,8 @@ version: 1.2.2
 ## Repository Layout
 
 - root module: public driver interface
-- `modules/stack-generator`: internal Terramate-only stack metadata generator
+- `modules/stack`: internal Terramate stack wrapper that renders both generic
+  Terraform files and Terramate metadata
 - `examples/basic`: basic usage and executable validation case
 - `examples/with-shared-configs`: shared `_.yaml` executable validation case
 - `examples/linked-stacks`: linked-stack and backend-aware executable validation
@@ -88,8 +109,81 @@ Linked-stacks test:
 ```bash
 terraform -chdir=examples/linked-stacks init -input=false
 terraform -chdir=examples/linked-stacks apply -auto-approve
-cd examples/linked-stacks/output && terramate list
+cd examples/linked-stacks/_terraform && terramate list
 ```
+
+## General Terramate Flow
+
+For a real Terramate setup using outputs-sharing:
+
+1. Generate the stack tree:
+
+```bash
+terraform -chdir=PATH/TO/EXAMPLE init -input=false
+terraform -chdir=PATH/TO/EXAMPLE apply -auto-approve
+```
+
+2. Enable the experiment once at the real Terramate repository root:
+
+```hcl
+terramate {
+  config {
+    experiments = ["outputs-sharing"]
+  }
+}
+```
+
+3. Generate Terramate helper code:
+
+```bash
+terramate -C PATH/TO/GENERATED_STACKS generate
+```
+
+4. Initialize generated stacks:
+
+```bash
+terramate -C PATH/TO/GENERATED_STACKS run \
+  --disable-safeguards=git-untracked,git-uncommitted \
+  -- terraform init
+```
+
+5. Plan or apply with sharing enabled:
+
+```bash
+terramate -C PATH/TO/GENERATED_STACKS run \
+  --enable-sharing \
+  --mock-on-fail \
+  --disable-safeguards=git-untracked,git-uncommitted \
+  -- terraform plan
+```
+
+```bash
+terramate -C PATH/TO/GENERATED_STACKS run \
+  --enable-sharing \
+  --mock-on-fail \
+  --disable-safeguards=git-untracked,git-uncommitted \
+  -- terraform apply -auto-approve
+```
+
+6. Destroy in reverse order:
+
+```bash
+terramate -C PATH/TO/GENERATED_STACKS run \
+  --reverse \
+  --enable-sharing \
+  --disable-safeguards=git-untracked,git-uncommitted \
+  -- terraform destroy -auto-approve
+```
+
+Notes:
+
+- `terraform init` should normally run without `--enable-sharing`
+- `--mock-on-fail` is useful for preview or bootstrap flows, but only for stacks
+  that allow mocks
+- if a stack sets `mock_inputs.enabled: false`, it requires real producer outputs
+  before consumer `plan` can succeed
+- `--mock-on-fail` should usually be omitted for destroy when null mock values
+  would make resource arguments invalid
 <!-- BEGINNING OF PRE-COMMIT-TERRAFORM DOCS HOOK -->
 ## Requirements
 
@@ -100,27 +194,32 @@ cd examples/linked-stacks/output && terramate list
 
 ## Providers
 
-No providers.
+| Name | Version |
+|------|---------|
+| <a name="provider_local"></a> [local](#provider\_local) | 2.9.0 |
 
 ## Modules
 
 | Name | Source | Version |
 |------|--------|---------|
-| <a name="module_stack_generators"></a> [stack\_generators](#module\_stack\_generators) | ./modules/stack-generator | n/a |
-| <a name="module_terraform_setups"></a> [terraform\_setups](#module\_terraform\_setups) | dasmeta/generic/renderer | 1.0.0 |
+| <a name="module_terraform_setups"></a> [terraform\_setups](#module\_terraform\_setups) | ./modules/stack | n/a |
 
 ## Resources
 
-No resources.
+| Name | Type |
+|------|------|
+| [local_file.terramate_outputs_sharing_config](https://registry.terraform.io/providers/hashicorp/local/latest/docs/resources/file) | resource |
 
 ## Inputs
 
 | Name | Description | Type | Default | Required |
 |------|-------------|------|---------|:--------:|
-| <a name="input_provider_custom_var_blocks"></a> [provider\_custom\_var\_blocks](#input\_provider\_custom\_var\_blocks) | Optional provider-specific custom blocks passed to the shared renderer. | `any` | `{}` | no |
-| <a name="input_provider_default_tags"></a> [provider\_default\_tags](#input\_provider\_default\_tags) | Optional provider-specific default tag settings passed to the shared renderer. | `any` | <pre>{<br/>  "aws": {<br/>    "applied_from": "terramate",<br/>    "enabled": true,<br/>    "extra_tags": {},<br/>    "managed_by": "terraform"<br/>  }<br/>}</pre> | no |
+| <a name="input_linking_mode"></a> [linking\_mode](#input\_linking\_mode) | Linked stack implementation mode. Defaults to Terramate experimental outputs sharing. Use remote\_state for stable Terraform-native linking. | `string` | `"terramate_outputs_sharing"` | no |
+| <a name="input_mock_inputs_enabled"></a> [mock\_inputs\_enabled](#input\_mock\_inputs\_enabled) | Whether Terramate outputs-sharing mock inputs are enabled by default for consumer stacks. Individual stack YAML can override this with mock\_inputs.enabled. | `bool` | `true` | no |
+| <a name="input_provider_configs"></a> [provider\_configs](#input\_provider\_configs) | Optional grouped provider-specific configuration passed to generated Terramate stacks. | `any` | <pre>{<br/>  "aws": {<br/>    "custom_var_blocks": {},<br/>    "default_tags": {<br/>      "applied_from": "terramate",<br/>      "enabled": true,<br/>      "extra_tags": {},<br/>      "managed_by": "terraform"<br/>    }<br/>  }<br/>}</pre> | no |
+| <a name="input_stack_id_prefix"></a> [stack\_id\_prefix](#input\_stack\_id\_prefix) | Optional prefix added to generated Terramate stack IDs. Useful only when multiple generated stack trees live in the same Terramate repository and would otherwise collide. | `string` | `null` | no |
 | <a name="input_targetdir"></a> [targetdir](#input\_targetdir) | The directory where generated Terramate stacks will be written. | `string` | `"./generated/stacks"` | no |
-| <a name="input_terraform_backend"></a> [terraform\_backend](#input\_terraform\_backend) | Optional default Terraform backend configuration applied to generated stacks. | <pre>object({<br/>    name    = string<br/>    configs = optional(any, {})<br/>  })</pre> | <pre>{<br/>  "configs": null,<br/>  "name": null<br/>}</pre> | no |
+| <a name="input_terraform_backend"></a> [terraform\_backend](#input\_terraform\_backend) | Optional default Terraform backend configuration applied to generated stacks. | <pre>object({<br/>    name    = string            # Terraform backend type applied to generated Terramate stacks by default.<br/>    configs = optional(any, {}) # Backend configuration arguments applied to generated Terramate stacks by default.<br/>  })</pre> | <pre>{<br/>  "configs": null,<br/>  "name": null<br/>}</pre> | no |
 | <a name="input_terraform_version"></a> [terraform\_version](#input\_terraform\_version) | The Terraform version constraint emitted into generated stack files. | `string` | `"~> 1.3"` | no |
 | <a name="input_yamldir"></a> [yamldir](#input\_yamldir) | The directory where YAML module definitions are located. | `string` | `"."` | no |
 
@@ -128,7 +227,7 @@ No resources.
 
 | Name | Description |
 |------|-------------|
-| <a name="output_generated_files"></a> [generated\_files](#output\_generated\_files) | Generated file paths written by the stack generator submodule. |
+| <a name="output_generated_files"></a> [generated\_files](#output\_generated\_files) | Generated file paths written by the stack submodule. |
 | <a name="output_stack_paths"></a> [stack\_paths](#output\_stack\_paths) | Relative stack paths generated from the YAML directory tree. |
 | <a name="output_stacks"></a> [stacks](#output\_stacks) | Normalized stack definitions derived from YAML input. |
 | <a name="output_yaml_files"></a> [yaml\_files](#output\_yaml\_files) | Resolved YAML files after shared-config merge and filtering. |
