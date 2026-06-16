@@ -5,4 +5,5 @@
 crash.log
 examples/**/generated/
 examples/**/output/
+examples/**/_terraform/
 tests/

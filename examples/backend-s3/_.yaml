@@ -1,0 +1,6 @@
+source: &module_source dasmeta/empty/null
+version: &module_version 1.2.2
+
+dns_zone_name: &dns_zone_name terramate-test.devops.dasmeta.com
+dns_module_source: &dns_module_source dasmeta/dns/aws
+dns_module_version: &dns_module_version 1.0.4

@@ -1,4 +1,6 @@
 source: *module_source
 version: *module_version
+output:
+  sensitive: true
 variables:
-  first-string: shared-from-module-a
+  first-string: backend-s3-a

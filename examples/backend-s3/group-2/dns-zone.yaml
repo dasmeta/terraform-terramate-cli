@@ -1,0 +1,5 @@
+source: *dns_module_source
+version: *dns_module_version
+variables:
+  zone: *dns_zone_name
+  create_zone: true

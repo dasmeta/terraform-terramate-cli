@@ -5,9 +5,9 @@ repository.
 
 It verifies that the root driver module:
 
-- merges shared `_.yaml` content into child module YAML files
-- preserves nested stack paths in generated output
-- writes the expected Terramate and Terraform files for nested modules
+- merges shared `_.yaml` content from the example root into child module YAML files
+- preserves grouped and nested stack paths in generated output
+- writes the expected Terramate and Terraform files for nested modules under `_terraform/`
 <!-- BEGINNING OF PRE-COMMIT-TERRAFORM DOCS HOOK -->
 ## Requirements
 

@@ -1,9 +1,10 @@
 # linked-stacks
 
 This example proves linked-stack behavior for the Terramate driver module. It
-uses two generated stacks based on `dasmeta/empty/null`, where `module-b`
-declares an explicit dependency on `module-a` and consumes interpolated values
-from it.
+uses two generated stacks based on `dasmeta/empty/null`, where `group-0/module-b`
+declares an explicit dependency on `group-0/module-a` and consumes
+interpolated values from it. The example YAML files live at the example root
+and generated Terramate stacks are written to `_terraform/`.
 <!-- BEGINNING OF PRE-COMMIT-TERRAFORM DOCS HOOK -->
 ## Requirements
 

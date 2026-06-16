@@ -1,7 +1,0 @@
-source: *module_source
-version: *module_version
-linked_workspaces:
-  - module-a
-variables:
-  first-string: ${module-a["first-string-variable"]}
-  second-bool: true
