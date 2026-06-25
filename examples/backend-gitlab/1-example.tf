@@ -1,9 +1,10 @@
 module "this" {
   source = "../.."
 
-  yamldir      = path.module
-  targetdir    = "./_terraform"
-  linking_mode = "remote_state"
+  yamldir         = path.module
+  targetdir       = "./_terraform"
+  stack_id_prefix = "backend-gitlab"
+  linking_mode    = "remote_state"
   terraform_backend = {
     name = "http"
     configs = {
