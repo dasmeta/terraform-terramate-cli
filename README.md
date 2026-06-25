@@ -202,7 +202,7 @@ Notes:
 
 | Name | Source | Version |
 |------|--------|---------|
-| <a name="module_infra_yaml_fetched"></a> [infra\_yaml\_fetched](#module\_infra\_yaml\_fetched) | dasmeta/generic/renderer//modules/infra-yaml-fetched | 1.1.0 |
+| <a name="module_infra_yaml_fetched"></a> [infra\_yaml\_fetched](#module\_infra\_yaml\_fetched) | dasmeta/generic/renderer//modules/infra-yaml-fetched | 1.1.1 |
 | <a name="module_terraform_setups"></a> [terraform\_setups](#module\_terraform\_setups) | ./modules/stack | n/a |
 
 ## Resources
@@ -215,7 +215,6 @@ Notes:
 
 | Name | Description | Type | Default | Required |
 |------|-------------|------|---------|:--------:|
-| <a name="input_auto_detected_linked_workspaces"></a> [auto\_detected\_linked\_workspaces](#input\_auto\_detected\_linked\_workspaces) | Optional pre-fetched linked workspace map. Required together with yaml\_files when bypassing the internal infra-yaml-fetched module. | `any` | `null` | no |
 | <a name="input_linking_mode"></a> [linking\_mode](#input\_linking\_mode) | Linked stack implementation mode. Defaults to Terramate experimental outputs sharing. Use remote\_state for stable Terraform-native linking. | `string` | `"terramate_outputs_sharing"` | no |
 | <a name="input_mock_inputs_enabled"></a> [mock\_inputs\_enabled](#input\_mock\_inputs\_enabled) | Whether Terramate outputs-sharing mock inputs are enabled by default for consumer stacks. Individual stack YAML can override this with mock\_inputs.enabled. | `bool` | `true` | no |
 | <a name="input_provider_configs"></a> [provider\_configs](#input\_provider\_configs) | Optional grouped provider-specific configuration passed to generated Terramate stacks. | `any` | <pre>{<br/>  "aws": {<br/>    "custom_var_blocks": {},<br/>    "default_tags": {<br/>      "applied_from": "terramate",<br/>      "enabled": true,<br/>      "extra_tags": {},<br/>      "managed_by": "terraform"<br/>    }<br/>  }<br/>}</pre> | no |
@@ -223,7 +222,6 @@ Notes:
 | <a name="input_targetdir"></a> [targetdir](#input\_targetdir) | The directory where generated Terramate stacks will be written. | `string` | `"./generated/stacks"` | no |
 | <a name="input_terraform_backend"></a> [terraform\_backend](#input\_terraform\_backend) | Optional default Terraform backend configuration applied to generated stacks. | <pre>object({<br/>    name    = string            # Terraform backend type applied to generated Terramate stacks by default.<br/>    configs = optional(any, {}) # Backend configuration arguments applied to generated Terramate stacks by default.<br/>  })</pre> | <pre>{<br/>  "configs": null,<br/>  "name": null<br/>}</pre> | no |
 | <a name="input_terraform_version"></a> [terraform\_version](#input\_terraform\_version) | The Terraform version constraint emitted into generated stack files. | `string` | `"~> 1.3"` | no |
-| <a name="input_yaml_files"></a> [yaml\_files](#input\_yaml\_files) | Optional pre-fetched workspace YAML. When set, skips the internal infra-yaml-fetched module (required when this driver is used as a nested module with a local source). | `any` | `null` | no |
 | <a name="input_yamldir"></a> [yamldir](#input\_yamldir) | The directory where YAML module definitions are located. | `string` | `"."` | no |
 
 ## Outputs

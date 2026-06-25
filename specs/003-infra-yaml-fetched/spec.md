@@ -11,9 +11,8 @@ Terramate stack generation in this repository.
 
 ## What
 
-- call `infra-yaml-fetched` from registry version `1.1.0`
+- call `infra-yaml-fetched` from registry version `1.1.1`
 - remove duplicated YAML locals from the driver root module
-- accept optional pre-fetched `yaml_files` and `auto_detected_linked_workspaces`
 - ensure examples use unique `stack_id_prefix` values to avoid Terramate stack
   ID collisions across multiple example trees in one repository
 
