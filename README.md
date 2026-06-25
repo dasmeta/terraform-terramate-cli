@@ -202,6 +202,7 @@ Notes:
 
 | Name | Source | Version |
 |------|--------|---------|
+| <a name="module_infra_yaml_fetched"></a> [infra\_yaml\_fetched](#module\_infra\_yaml\_fetched) | dasmeta/generic/renderer//modules/infra-yaml-fetched | 1.1.1 |
 | <a name="module_terraform_setups"></a> [terraform\_setups](#module\_terraform\_setups) | ./modules/stack | n/a |
 
 ## Resources
