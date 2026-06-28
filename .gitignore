@@ -7,3 +7,4 @@ examples/**/generated/
 examples/**/output/
 examples/**/_terraform/
 tests/
+.external_modules

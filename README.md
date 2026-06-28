@@ -11,13 +11,12 @@ shared driver-agnostic mapping logic.
 
 - reads multiple YAML files from a directory tree
 - merges shared `_.yaml` content into child YAML files
-- filters input down to module definitions that provide `source` and `version`
+- filters input down to module definitions that provide `source` (and `version` for registry modules; local paths default to `local`)
 - generates one Terramate stack per resolved YAML file
 - renders generic Terraform files through the shared `terraform-renderer-generic`
   module
 - writes Terramate stack metadata into the target directory
-- supports explicit `linked_workspaces` and auto-detected `${stack.output}`
-  interpolation references
+- supports explicit `linked_workspaces`, auto-detected `${stack.output}` interpolation, and tiered `2-products/.../setups/` → `1-environments/.../cluster` path linking
 - defaults linked stack handling to Terramate experimental outputs-sharing
 - forces shared-renderer `outputs.tf` off in outputs-sharing mode and back on in
   explicit `remote_state` mode
@@ -65,7 +64,11 @@ version: 1.2.2
 - `terraform_version`: Terraform version constraint emitted into generated
   `versions.tf`
 - `terraform_backend`: optional default backend configuration applied to
-  generated stacks unless overridden in YAML
+  generated stacks unless overridden in YAML. Per-stack YAML may set only
+  `configs.state_key` to pick a legacy GitLab/S3 state name; shared fields
+  (URL, credentials, `lock_method`, …) stay in the module default. Without
+  `state_key`, the Terramate stack name slug derived from the YAML path is used
+  (same transform as the generated stack `name`: `/` → `_`).
 - `mock_inputs_enabled`: optional default for Terramate outputs-sharing mocks;
   stack YAML may override it with `mock_inputs.enabled`
 
@@ -202,7 +205,7 @@ Notes:
 
 | Name | Source | Version |
 |------|--------|---------|
-| <a name="module_infra_yaml_fetched"></a> [infra\_yaml\_fetched](#module\_infra\_yaml\_fetched) | dasmeta/generic/renderer//modules/infra-yaml-fetched | 1.1.1 |
+| <a name="module_infra_yaml_loader"></a> [infra\_yaml\_loader](#module\_infra\_yaml\_loader) | dasmeta/generic/renderer//modules/infra-yaml-loader | 1.2.0 |
 | <a name="module_terraform_setups"></a> [terraform\_setups](#module\_terraform\_setups) | ./modules/stack | n/a |
 
 ## Resources
