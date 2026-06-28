@@ -1,6 +1,52 @@
 locals {
-  yaml_files                      = module.infra_yaml_fetched.yaml_files
-  auto_detected_linked_workspaces = module.infra_yaml_fetched.auto_detected_linked_workspaces
+  yaml_files                      = module.infra_yaml_loader.yaml_files
+  auto_detected_linked_workspaces = module.infra_yaml_loader.auto_detected_linked_workspaces
+
+  stack_backend_merged_configs = {
+    for path, item in local.yaml_files :
+    path => merge(
+      coalesce(var.terraform_backend.configs, {}),
+      coalesce(try(item.terraform_backend.configs, null), {}),
+    )
+  }
+
+  stack_backend_state_slug = {
+    for path in keys(local.yaml_files) :
+    path => replace(path, "/[^a-zA-Z0-9_-]+/", "_")
+  }
+
+  stack_backend_state_suffix = {
+    for path, configs in local.stack_backend_merged_configs :
+    path => try(configs.state_key, null) != null ? configs.state_key : local.stack_backend_state_slug[path]
+  }
+
+  stack_backend_suffix_overrides = {
+    for path, configs in local.stack_backend_merged_configs :
+    path => merge(
+      contains(keys(configs), "path") ? {
+        path = (
+          endswith(tostring(configs.path), ".tfstate") ?
+          "${dirname(tostring(configs.path))}/${local.stack_backend_state_suffix[path]}/terraform.tfstate" :
+          "${trimsuffix(tostring(configs.path), "/")}/${local.stack_backend_state_suffix[path]}/terraform.tfstate"
+        )
+      } : {},
+      contains(keys(configs), "key") ? {
+        key = "${trimsuffix(trimsuffix(tostring(configs.key), ".tfstate"), "/")}/${local.stack_backend_state_suffix[path]}/terraform.tfstate"
+      } : {},
+      contains(keys(configs), "workspace_key_prefix") ? {
+        workspace_key_prefix = "${trimsuffix(tostring(configs.workspace_key_prefix), "/")}/${local.stack_backend_state_suffix[path]}"
+      } : {},
+      contains(keys(configs), "address") ? {
+        address = "${trimsuffix(tostring(configs.address), "/")}/${local.stack_backend_state_suffix[path]}"
+      } : {},
+      contains(keys(configs), "lock_address") ? {
+        lock_address = "${trimsuffix(tostring(configs.lock_address), "/")}/${local.stack_backend_state_suffix[path]}/lock"
+      } : {},
+      contains(keys(configs), "unlock_address") ? {
+        unlock_address = "${trimsuffix(tostring(configs.unlock_address), "/")}/${local.stack_backend_state_suffix[path]}/lock"
+      } : {}
+    )
+  }
 
   stacks = {
     for path, item in local.yaml_files :
@@ -24,30 +70,11 @@ locals {
         } : {
         name = coalesce(try(item.terraform_backend.name, null), var.terraform_backend.name)
         configs = merge(
-          coalesce(var.terraform_backend.configs, {}),
-          coalesce(try(item.terraform_backend.configs, null), {}),
-          contains(keys(merge(coalesce(var.terraform_backend.configs, {}), coalesce(try(item.terraform_backend.configs, null), {}))), "path") ? {
-            path = (
-              endswith(tostring(merge(coalesce(var.terraform_backend.configs, {}), coalesce(try(item.terraform_backend.configs, null), {})).path), ".tfstate") ?
-              "${dirname(tostring(merge(coalesce(var.terraform_backend.configs, {}), coalesce(try(item.terraform_backend.configs, null), {})).path))}/${path}/terraform.tfstate" :
-              "${trimsuffix(tostring(merge(coalesce(var.terraform_backend.configs, {}), coalesce(try(item.terraform_backend.configs, null), {})).path), "/")}/${path}/terraform.tfstate"
-            )
-          } : {},
-          contains(keys(merge(coalesce(var.terraform_backend.configs, {}), coalesce(try(item.terraform_backend.configs, null), {}))), "key") ? {
-            key = "${trimsuffix(trimsuffix(tostring(merge(coalesce(var.terraform_backend.configs, {}), coalesce(try(item.terraform_backend.configs, null), {})).key), ".tfstate"), "/")}/${path}/terraform.tfstate"
-          } : {},
-          contains(keys(merge(coalesce(var.terraform_backend.configs, {}), coalesce(try(item.terraform_backend.configs, null), {}))), "workspace_key_prefix") ? {
-            workspace_key_prefix = "${trimsuffix(tostring(merge(coalesce(var.terraform_backend.configs, {}), coalesce(try(item.terraform_backend.configs, null), {})).workspace_key_prefix), "/")}/${path}"
-          } : {},
-          contains(keys(merge(coalesce(var.terraform_backend.configs, {}), coalesce(try(item.terraform_backend.configs, null), {}))), "address") ? {
-            address = "${trimsuffix(tostring(merge(coalesce(var.terraform_backend.configs, {}), coalesce(try(item.terraform_backend.configs, null), {})).address), "/")}/${path}"
-          } : {},
-          contains(keys(merge(coalesce(var.terraform_backend.configs, {}), coalesce(try(item.terraform_backend.configs, null), {}))), "lock_address") ? {
-            lock_address = "${trimsuffix(tostring(merge(coalesce(var.terraform_backend.configs, {}), coalesce(try(item.terraform_backend.configs, null), {})).lock_address), "/")}/${path}/lock"
-          } : {},
-          contains(keys(merge(coalesce(var.terraform_backend.configs, {}), coalesce(try(item.terraform_backend.configs, null), {}))), "unlock_address") ? {
-            unlock_address = "${trimsuffix(tostring(merge(coalesce(var.terraform_backend.configs, {}), coalesce(try(item.terraform_backend.configs, null), {})).unlock_address), "/")}/${path}/lock"
-          } : {}
+          {
+            for key, value in local.stack_backend_merged_configs[path] : key => value
+            if key != "state_key"
+          },
+          local.stack_backend_suffix_overrides[path]
         )
       }
       output = {
