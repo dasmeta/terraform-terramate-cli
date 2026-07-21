@@ -11,7 +11,7 @@ Terramate stack generation in this repository.
 
 ## What
 
-- call `infra-yaml-loader` from registry version `1.2.0`
+- call `infra-yaml-loader` from registry version `1.2.1`
 - remove duplicated YAML locals from the driver root module
 - ensure examples use unique `stack_id_prefix` values to avoid Terramate stack
   ID collisions across multiple example trees in one repository
@@ -21,4 +21,5 @@ Terramate stack generation in this repository.
 - driver root module uses `dasmeta/generic/renderer//modules/infra-yaml-loader`
 - duplicated YAML merge/filter locals are removed from `locals.tf`
 - examples assign unique `stack_id_prefix` values
+- empty YAML files are ignored without loader evaluation failures
 - existing YAML examples continue to work without format changes
