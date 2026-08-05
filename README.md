@@ -7,6 +7,9 @@ The repository currently focuses on the Terramate execution path. It keeps the
 consumer interface intentionally small and preserves room for later extraction of
 shared driver-agnostic mapping logic.
 
+Debugging this driver or a setup that consumes it? See [AGENTS.md](./AGENTS.md)
+for the symptom-to-cause table, validation recipes, and known traps.
+
 ## What It Does
 
 - reads multiple YAML files from a directory tree
@@ -16,7 +19,7 @@ shared driver-agnostic mapping logic.
 - renders generic Terraform files through the shared `terraform-renderer-generic`
   module
 - writes Terramate stack metadata into the target directory
-- supports explicit `linked_workspaces`, auto-detected `${stack.output}` interpolation, and tiered `2-products/.../setups/` → `1-environments/.../cluster` path linking
+- supports explicit `linked_workspaces` and auto-detected `${stack.output}` interpolation
 - defaults linked stack handling to Terramate experimental outputs-sharing
 - forces shared-renderer `outputs.tf` off in outputs-sharing mode and back on in
   explicit `remote_state` mode
@@ -192,7 +195,7 @@ Notes:
 
 | Name | Version |
 |------|---------|
-| <a name="requirement_terraform"></a> [terraform](#requirement\_terraform) | ~> 1.3 |
+| <a name="requirement_terraform"></a> [terraform](#requirement\_terraform) | ~> 1.8 |
 | <a name="requirement_local"></a> [local](#requirement\_local) | ~> 2.5 |
 
 ## Providers
@@ -205,7 +208,7 @@ Notes:
 
 | Name | Source | Version |
 |------|--------|---------|
-| <a name="module_infra_yaml_loader"></a> [infra\_yaml\_loader](#module\_infra\_yaml\_loader) | dasmeta/generic/renderer//modules/infra-yaml-loader | 1.2.1 |
+| <a name="module_infra_yaml_loader"></a> [infra\_yaml\_loader](#module\_infra\_yaml\_loader) | dasmeta/generic/renderer//modules/infra-yaml-loader | 1.2.2 |
 | <a name="module_terraform_setups"></a> [terraform\_setups](#module\_terraform\_setups) | ./modules/stack | n/a |
 
 ## Resources
