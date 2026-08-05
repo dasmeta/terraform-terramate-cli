@@ -1,5 +1,5 @@
 terraform {
-  required_version = "~> 1.3"
+  required_version = "~> 1.8"
 }
 
 # Set with: export TF_VAR_backend_s3_bucket="my-real-state-bucket"

@@ -10,7 +10,7 @@ and generated Terramate stacks are written to `_terraform/`.
 
 | Name | Version |
 |------|---------|
-| <a name="requirement_terraform"></a> [terraform](#requirement\_terraform) | ~> 1.3 |
+| <a name="requirement_terraform"></a> [terraform](#requirement\_terraform) | ~> 1.8 |
 
 ## Providers
 

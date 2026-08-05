@@ -9,7 +9,7 @@ This module is repository-internal. Consumers should use the root module.
 
 | Name | Version |
 |------|---------|
-| <a name="requirement_terraform"></a> [terraform](#requirement\_terraform) | ~> 1.3 |
+| <a name="requirement_terraform"></a> [terraform](#requirement\_terraform) | ~> 1.8 |
 | <a name="requirement_local"></a> [local](#requirement\_local) | ~> 2.5 |
 
 ## Providers
@@ -22,7 +22,7 @@ This module is repository-internal. Consumers should use the root module.
 
 | Name | Source | Version |
 |------|--------|---------|
-| <a name="module_renderer"></a> [renderer](#module\_renderer) | dasmeta/generic/renderer | 1.0.4 |
+| <a name="module_renderer"></a> [renderer](#module\_renderer) | dasmeta/generic/renderer | 1.2.2 |
 
 ## Resources
 
